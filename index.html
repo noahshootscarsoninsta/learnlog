@@ -1,0 +1,325 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>LearnLog</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<meta name="description" content="LearnLog — track what you want to learn, what you're learning, and what you can do.">
+
+<!-- PWA -->
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0d0d0d">
+<meta name="application-name" content="LearnLog">
+
+<!-- iOS install support -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="LearnLog">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="app" id="appRoot">
+
+  <!-- ============================== HOME ============================== -->
+  <section class="page active" id="page-home">
+    <header class="app-header">
+      <div class="app-title">
+        <h1>LearnLog<span class="dot">.</span></h1>
+      </div>
+      <p class="app-tagline">Track what you want to learn, what you're learning, and what you can do.</p>
+      <p class="summary-line" id="summaryLine">0 learning · 0 can do</p>
+    </header>
+
+    <div class="install-banner hidden" id="installBanner">
+      <div class="info">
+        <div class="title">Install LearnLog</div>
+        <div class="desc">Add it to your home screen for one-tap, full-screen access.</div>
+      </div>
+      <button class="install-btn" id="installBtn">Install</button>
+      <button class="dismiss-btn" id="installDismissBtn" aria-label="Dismiss">✕</button>
+    </div>
+
+    <div class="tabs" id="tabs" role="tablist" aria-label="Skill status">
+      <button class="tab" data-status="want" role="tab" aria-selected="false">
+        <span class="tab-count">0</span>Want to Learn
+      </button>
+      <button class="tab active" data-status="learning" role="tab" aria-selected="true">
+        <span class="tab-count">0</span>Learning
+      </button>
+      <button class="tab" data-status="can" role="tab" aria-selected="false">
+        <span class="tab-count">0</span>Can Do
+      </button>
+    </div>
+
+    <div class="section-toolbar" id="sectionToolbar" role="group" aria-label="Sort order">
+      <span class="count" id="sectionCount">0 skills</span>
+      <div class="sort-toggle">
+        <button data-sort="manual" class="active" aria-pressed="true">Manual</button>
+        <button data-sort="alpha" aria-pressed="false">A–Z</button>
+      </div>
+    </div>
+
+    <div class="page-scroll" id="homeScroll" role="tabpanel">
+      <div class="skill-list" id="skillList"></div>
+    </div>
+
+    <button class="fab" id="fabAdd" aria-label="Add a skill">+</button>
+  </section>
+
+  <!-- ============================== SEARCH ============================== -->
+  <section class="page" id="page-search">
+    <header class="page-header">
+      <h1>Search</h1>
+      <p>Find any skill across all three lists.</p>
+    </header>
+    <div class="search-bar">
+      <span>🔍</span>
+      <input type="text" id="searchInput" placeholder="Search skills or notes…" autocomplete="off">
+    </div>
+    <div class="chip-row" id="categoryChips"></div>
+    <div class="page-scroll">
+      <div class="skill-list" id="searchResults"></div>
+    </div>
+  </section>
+
+  <!-- ============================== CATEGORIES ============================== -->
+  <section class="page" id="page-categories">
+    <header class="page-header">
+      <h1>Categories</h1>
+      <p>Organize skills into groups that make sense to you.</p>
+    </header>
+    <div class="page-scroll">
+      <div class="cat-list" id="categoryList"></div>
+      <div class="add-cat-row" style="margin-top: 14px;">
+        <input type="text" id="newCategoryInput" placeholder="New category name">
+        <button class="btn-primary" id="addCategoryBtn">Add</button>
+      </div>
+      <button class="restore-defaults-link" id="restoreDefaultsBtn">Restore default categories</button>
+    </div>
+  </section>
+
+  <!-- ============================== SETTINGS ============================== -->
+  <section class="page" id="page-settings">
+    <header class="page-header">
+      <h1>Settings</h1>
+      <p>Appearance, backup, and about LearnLog.</p>
+    </header>
+    <div class="page-scroll">
+
+      <div class="settings-section">
+        <h2>Appearance</h2>
+        <div class="settings-card">
+          <div class="settings-row">
+            <div>
+              <div class="label">Theme</div>
+              <div class="desc">Dark is the default. Auto follows your device.</div>
+            </div>
+            <div class="segmented" id="themeSegmented" role="group" aria-label="Theme">
+              <button data-theme="dark" class="active" aria-pressed="true">Dark</button>
+              <button data-theme="light" aria-pressed="false">Light</button>
+              <button data-theme="auto" aria-pressed="false">Auto</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <h2>Backup &amp; Restore</h2>
+        <div class="settings-card">
+          <button class="settings-btn" id="exportBtn">
+            <span>Export backup file</span><span>⇩</span>
+          </button>
+          <button class="settings-btn" id="importBtn">
+            <span>Restore from backup</span><span>⇧</span>
+          </button>
+          <button class="settings-btn" id="shareListBtn">
+            <span>Share your list</span><span>↗</span>
+          </button>
+          <input type="file" id="importFile" accept="application/json" class="hidden">
+          <div class="backup-hint" id="backupHint">You haven't backed up yet.</div>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <h2>Recently Deleted</h2>
+        <div class="settings-card" id="deletedCard">
+          <div class="empty-inline" id="deletedEmpty">Nothing here right now.</div>
+          <div id="deletedList"></div>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <h2>About</h2>
+        <p class="about-text">
+          LearnLog stores everything — skills, categories, notes, photos and videos — on this device only, using IndexedDB. There's no account and no internet connection required after the app is first opened. Use Export regularly to keep a backup file somewhere safe.
+        </p>
+        <p class="version-text" id="versionText">Version learnlog-v5</p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============================== BOTTOM NAV ============================== -->
+  <nav class="bottom-nav" role="navigation" aria-label="Primary">
+    <button class="nav-btn active" data-page="home" aria-current="page"><span class="icon" aria-hidden="true">⌂</span>Home</button>
+    <button class="nav-btn" data-page="search"><span class="icon" aria-hidden="true">🔍</span>Search</button>
+    <button class="nav-btn" data-page="categories"><span class="icon" aria-hidden="true">▤</span>Categories</button>
+    <button class="nav-btn" data-page="settings"><span class="icon" aria-hidden="true">⚙</span>Settings</button>
+  </nav>
+</div>
+
+<!-- ============================== SKILL DETAIL SHEET ============================== -->
+<div class="overlay" id="detailSheet">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="detailName">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header">
+      <h2 class="sr-only">Skill Details</h2>
+      <button class="sheet-close" data-close-sheet aria-label="Close">✕</button>
+    </div>
+    <div class="detail-media hidden" id="detailMedia"></div>
+    <div class="detail-meta">
+      <h2 id="detailName">Skill name</h2>
+      <button class="star" id="detailStar" style="font-size:22px;" aria-label="Toggle favorite" aria-pressed="false">☆</button>
+    </div>
+    <div style="display:flex; gap:8px; align-items:center; margin-bottom:6px;">
+      <span class="category" id="detailCategory" style="font-size:13px;"></span>
+      <span class="status-badge" id="detailStatusBadge"></span>
+    </div>
+    <p class="detail-notes" id="detailNotes">No notes yet.</p>
+    <div class="sheet-actions">
+      <button class="btn" id="detailStatusBtn">Move</button>
+      <button class="btn primary" id="detailEditBtn">Edit</button>
+    </div>
+    <div class="sheet-actions" style="margin-top:10px;">
+      <button class="btn" id="detailDuplicateBtn">Duplicate</button>
+      <button class="btn" id="detailShareBtn">Share</button>
+    </div>
+    <div class="sheet-actions" style="margin-top:10px;">
+      <button class="btn danger" id="detailDeleteBtn">Delete Skill</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================== ADD / EDIT SKILL SHEET ============================== -->
+<div class="overlay" id="skillSheet">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="skillSheetTitle">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header">
+      <h2 id="skillSheetTitle">Add Skill</h2>
+      <button class="sheet-close" id="skillSheetClose" aria-label="Close">✕</button>
+    </div>
+
+    <div class="field">
+      <label for="skillName">Skill name</label>
+      <input type="text" id="skillName" placeholder="e.g. Backflip on trampoline" maxlength="80">
+    </div>
+
+    <div class="field">
+      <label for="skillCategory">Category</label>
+      <select id="skillCategory"></select>
+    </div>
+
+    <div class="field">
+      <label>Status</label>
+      <div class="status-picker" id="skillStatusPicker">
+        <button data-status="want">Want to Learn</button>
+        <button data-status="learning">Learning</button>
+        <button data-status="can">Can Do</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="skillNotes">Notes (optional)</label>
+      <textarea id="skillNotes" placeholder="Any details, cues, or reminders…"></textarea>
+    </div>
+
+    <div class="field">
+      <label>Photo or video (optional)</label>
+      <div class="media-picker-row">
+        <button type="button" class="media-picker-btn" id="skillMediaPicker"><span class="icon" aria-hidden="true">🖼</span>Choose from Library</button>
+        <button type="button" class="media-picker-btn" id="skillCameraPicker"><span class="icon" aria-hidden="true">📷</span>Take Photo</button>
+      </div>
+      <input type="file" id="skillMediaInput" accept="image/*,video/*" class="hidden">
+      <input type="file" id="skillCameraInput" accept="image/*" capture="environment" class="hidden">
+      <div class="media-preview hidden" id="skillMediaPreview"></div>
+      <button class="btn hidden" id="skillMediaRemoveBtn" style="margin-top:8px;">Remove media</button>
+    </div>
+
+    <div class="fav-row">
+      <span class="label" id="favSwitchLabel">Mark as favorite</span>
+      <div class="switch" id="skillFavoriteSwitch" role="switch" aria-checked="false" tabindex="0" aria-labelledby="favSwitchLabel"><div class="knob"></div></div>
+    </div>
+
+    <div class="sheet-actions">
+      <button class="btn" id="skillCancelBtn">Cancel</button>
+      <button class="btn primary" id="skillSaveBtn">Save</button>
+    </div>
+    <div class="sheet-actions hidden" id="skillDeleteBtn" style="margin-top:10px;">
+      <button class="btn danger" style="width:100%;">Delete Skill</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================== STATUS CHANGE SHEET ============================== -->
+<div class="overlay" id="statusSheet">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="statusSheetTitle">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header">
+      <h2 id="statusSheetTitle">Move to…</h2>
+      <button class="sheet-close" data-close-sheet aria-label="Close">✕</button>
+    </div>
+    <div id="statusOptions"></div>
+  </div>
+</div>
+
+<!-- ============================== CONFIRM SHEET ============================== -->
+<div class="overlay" id="confirmSheet">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header">
+      <h2 id="confirmTitle">Are you sure?</h2>
+    </div>
+    <p class="confirm-text" id="confirmMessage"></p>
+    <div class="backup-summary hidden" id="confirmSummary"></div>
+    <div class="warning-box hidden" id="confirmWarning"></div>
+    <div class="sheet-actions">
+      <button class="btn" id="confirmCancelBtn">Cancel</button>
+      <button class="btn primary" id="confirmOkBtn">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================== PROMPT SHEET (rename category) ============================== -->
+<div class="overlay" id="promptSheet">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="promptTitle">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header">
+      <h2 id="promptTitle">Rename</h2>
+    </div>
+    <div class="field">
+      <label for="promptInput" class="sr-only">Name</label>
+      <input type="text" id="promptInput" maxlength="40">
+    </div>
+    <div class="field">
+      <label>Icon</label>
+      <div class="icon-picker" id="promptIconPicker"></div>
+    </div>
+    <div class="sheet-actions">
+      <button class="btn" id="promptCancelBtn">Cancel</button>
+      <button class="btn primary" id="promptOkBtn">Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite">
+  <span class="toast-msg" id="toastMsg"></span>
+  <button class="toast-action hidden" id="toastAction"></button>
+</div>
+
+<script src="js/db.js" defer></script>
+<script src="js/app.js" defer></script>
+</body>
+</html>
