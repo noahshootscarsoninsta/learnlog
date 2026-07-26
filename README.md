@@ -46,14 +46,17 @@ LearnLog/
 │   ├── db.js                IndexedDB layer: skills, categories, settings, backup/restore
 │   └── app.js                UI logic, rendering, event handling
 └── icons/
-    ├── icon.svg              Master app icon (used for favicon + Android/Chrome install)
-    ├── icon-maskable.svg     Safe-zone version for Android adaptive icons
-    └── generate-icons.html   One-time helper — see "Icons" note below
+    ├── icon.svg              Master app icon (source of truth)
+    ├── icon-maskable.svg     Safe-zone source for Android adaptive icons
+    ├── icon-192.png          Android/Chrome home-screen icon
+    ├── icon-512.png          Android/Chrome install + splash icon
+    ├── icon-180.png          iOS home-screen icon
+    ├── icon-32.png           Favicon
+    ├── icon-maskable-512.png Android adaptive icon
+    └── generate-icons.html   Regenerates the PNGs above from the SVGs if you ever redesign the mark
 ```
 
-There's no build step and no dependencies. It's plain HTML/CSS/JS.
-
-**One thing to finish before you install on iPhone:** I wasn't able to generate real PNG image files in this environment (no code execution available), so `icons/icon-192.png`, `icon-512.png`, `icon-180.png`, and `icon-maskable-512.png` don't exist yet — only the SVG source does. Open `icons/generate-icons.html` in any browser once, click each "Download" button, and drop the downloaded PNGs into the `icons/` folder (same filenames). This takes under a minute and only needs to happen once. Until then, the app works completely normally — the only effect is that the iPhone home-screen icon will look like a plain screenshot instead of the orange "LL" mark.
+There's no build step and no dependencies. It's plain HTML/CSS/JS. All the icon PNGs are already generated and committed — nothing to do before installing on iPhone or Android. If you ever change the SVG source, reopen `icons/generate-icons.html` in a browser and re-export.
 
 ## 2. How offline storage works
 
