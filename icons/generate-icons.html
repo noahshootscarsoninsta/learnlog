@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>LearnLog Icon Generator</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; background:#111; color:#f5f5f5; padding:24px; max-width:520px; margin:0 auto; }
+  h1 { font-size:20px; }
+  p { color:#bbb; line-height:1.5; font-size:14px; }
+  .row { display:flex; align-items:center; gap:12px; padding:12px 0; border-bottom:1px solid #2a2a2a; }
+  canvas { background:#222; border-radius:8px; }
+  button { background:#FF7A1A; color:#111; border:none; padding:10px 16px; border-radius:8px; font-weight:700; font-size:14px; cursor:pointer; }
+  button:active { opacity:0.8; }
+  code { background:#222; padding:2px 6px; border-radius:4px; }
+</style>
+</head>
+<body>
+  <h1>LearnLog — one-time icon export</h1>
+  <p>This page turns the LearnLog SVG mark into the PNG files iOS and Android need for home-screen icons. Click each button to download the file, then drop it into the app's <code>icons/</code> folder (replacing the placeholder of the same name). You only need to do this once.</p>
+  <div id="list"></div>
+
+<script>
+const REGULAR_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="100" fill="#FF7A1A"/><text x="256" y="335" font-family="-apple-system, BlinkMacSystemFont, Helvetica Neue, Arial, sans-serif" font-size="260" font-weight="800" letter-spacing="-6" fill="#111111" text-anchor="middle">LL</text></svg>`;
+const MASKABLE_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" fill="#FF7A1A"/><text x="256" y="310" font-family="-apple-system, BlinkMacSystemFont, Helvetica Neue, Arial, sans-serif" font-size="190" font-weight="800" letter-spacing="-4" fill="#111111" text-anchor="middle">LL</text></svg>`;
+
+const targets = [
+  { name: "icon-192.png", size: 192, svg: REGULAR_SVG },
+  { name: "icon-512.png", size: 512, svg: REGULAR_SVG },
+  { name: "icon-180.png", size: 180, svg: REGULAR_SVG },
+  { name: "icon-32.png", size: 32, svg: REGULAR_SVG },
+  { name: "icon-maskable-512.png", size: 512, svg: MASKABLE_SVG },
+];
+
+const list = document.getElementById("list");
+
+targets.forEach(t => {
+  const row = document.createElement("div");
+  row.className = "row";
+  const canvas = document.createElement("canvas");
+  canvas.width = 64; canvas.height = 64;
+  canvas.style.width = "48px"; canvas.style.height = "48px";
+  const label = document.createElement("div");
+  label.style.flex = "1";
+  label.innerHTML = `<strong>${t.name}</strong><br><span style="color:#888;font-size:12px">${t.size}×${t.size}</span>`;
+  const btn = document.createElement("button");
+  btn.textContent = "Download";
+  btn.onclick = () => renderAndDownload(t, canvas);
+  row.append(canvas, label, btn);
+  list.append(row);
+  renderPreview(t, canvas);
+});
+
+function svgToImage(svg) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = "data:image/svg+xml;base64," + btoa(svg);
+  });
+}
+
+async function renderPreview(t, canvas) {
+  const img = await svgToImage(t.svg);
+  const ctx = canvas.getContext("2d");
+  ctx.drawImage(img, 0, 0, 64, 64);
+}
+
+async function renderAndDownload(t, previewCanvas) {
+  const img = await svgToImage(t.svg);
+  const canvas = document.createElement("canvas");
+  canvas.width = t.size; canvas.height = t.size;
+  const ctx = canvas.getContext("2d");
+  ctx.drawImage(img, 0, 0, t.size, t.size);
+  canvas.toBlob(blob => {
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = t.name;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  }, "image/png");
+}
+</script>
+</body>
+</html>
